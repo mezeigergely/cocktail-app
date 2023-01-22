@@ -12,7 +12,7 @@ class UserController extends Controller
         return view('signup');
     }
 
-    public function makeSignUp(Request $request)
+    public function makeSignUp()
     {
         $this->validate(request(), [
             'name' => 'required',
