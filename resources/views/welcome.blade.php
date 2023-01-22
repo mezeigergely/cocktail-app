@@ -37,7 +37,9 @@
                     <h4>Ingredients:</h4>
                     <ul>
                         @foreach ($ingredients as $key => $value)
-                            <li>{{ $value }} {{ $key }}</li>
+                            @if ($key != '')
+                                <li>{{ $value }} {{ $key }}</li>
+                            @endif
                         @endforeach
                     </ul>
                 </div>
