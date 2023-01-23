@@ -33,4 +33,19 @@ class CocktailApiManager extends Model
             return $cocktailFromApi ?? [];
         }
     }
+
+    public function getCocktailByName($cocktailName) : array
+    {
+        $apiUrl = config('constants.api_url').config("constants.search_by_name").$cocktailName;
+        $theCocktailDbResponse = Http::get($apiUrl);
+        try{
+            $dataResponse = json_decode($theCocktailDbResponse, true);
+            return $dataResponse;
+        }
+        catch (Exception $e)
+        {
+            Log::error('Api call error!'.' '.$e);
+            return redirect('/');
+        }
+    }
 }

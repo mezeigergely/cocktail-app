@@ -22,4 +22,9 @@ class UserController extends Controller
 
         User::create(request(['name', 'email', 'password']));
     }
+
+    public function signIn()
+    {
+        return view('login');
+    }
 }

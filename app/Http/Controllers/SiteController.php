@@ -12,9 +12,7 @@ class SiteController extends Controller
         $randomCocktail = $this->getRandomCocktail();
         $img = $randomCocktail[0]['cocktailImage'];
         $name = $randomCocktail[0]['cocktailName'];
-        $instru = $randomCocktail[0]['cocktailInstructions'];
-        $ingredients = $randomCocktail[1]['cocktailIngredientsPlusMeasures'];
-        return view('welcome', compact('img', 'name', 'instru', 'ingredients'));
+        return view('welcome', compact('img', 'name'));
     }
 
     public function getRandomCocktail()
@@ -25,13 +23,47 @@ class SiteController extends Controller
         return $randomCocktailFromApi;
     }
 
+    public function getCocktailByName(Request $request)
+    {
+        $cocktailApiManager = new CocktailApiManager();
+        $cocktailFromApi = $cocktailApiManager->apiCall(config("constants.search_by_name").$request->name);
+        if(!empty($cocktailFromApi)){
+            $cocktailFromApi = $this->getCocktailDetails($cocktailFromApi);
+        }
+        $img = $cocktailFromApi[0]['cocktailImage'];
+        $name = $cocktailFromApi[0]['cocktailName'];
+        $instru = $cocktailFromApi[0]['cocktailInstructions'];
+        $ingredients = $cocktailFromApi[1]['cocktailIngredientsPlusMeasures'];
+        $glass = $cocktailFromApi[0]['cocktailGlass'];
+        return view('cocktail', compact('img', 'name', 'instru', 'ingredients', 'glass'));
+    }
+
+    public function searchByName()
+    {
+        $cocktailApiManager = new CocktailApiManager();
+        $cocktailsFromApi = $cocktailApiManager->getCocktailByName($_GET['search']);
+        $cocktailArray = [];
+        foreach($cocktailsFromApi as $cocktails)
+        {
+            foreach($cocktails as $cocktail)
+            {
+                array_push($cocktailArray, [
+                    "cocktailName" => $cocktail["strDrink"],
+                    "cocktailImage" => $cocktail["strDrinkThumb"],
+                ]);
+            }
+        }
+        return view('cocktails', compact('cocktailArray'));
+    }
+
     protected function getCocktailDetails($cocktailArray) : array
     {
         $cocktailDetails = [];
         array_push($cocktailDetails, [
             "cocktailName" => $cocktailArray["strDrink"],
             "cocktailInstructions" => $cocktailArray["strInstructions"],
-            "cocktailImage" => $cocktailArray["strDrinkThumb"]
+            "cocktailImage" => $cocktailArray["strDrinkThumb"],
+            "cocktailGlass" => $cocktailArray["strGlass"]
         ]);
         $tempArrayIngredients = [];
         $tempArrayMeasures = [];
