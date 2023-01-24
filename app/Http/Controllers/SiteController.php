@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CocktailApiManager;
+use Exception;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
 
 class SiteController extends Controller
 {
@@ -40,20 +44,27 @@ class SiteController extends Controller
 
     public function searchByName()
     {
-        $cocktailApiManager = new CocktailApiManager();
-        $cocktailsFromApi = $cocktailApiManager->getCocktailByName($_GET['search']);
-        $cocktailArray = [];
-        foreach($cocktailsFromApi as $cocktails)
-        {
-            foreach($cocktails as $cocktail)
+        try{
+            $cocktailApiManager = new CocktailApiManager();
+            $cocktailsFromApi = $cocktailApiManager->getCocktailByName($_GET['search']);
+            $cocktailArray = [];
+            foreach($cocktailsFromApi as $cocktails)
             {
-                array_push($cocktailArray, [
-                    "cocktailName" => $cocktail["strDrink"],
-                    "cocktailImage" => $cocktail["strDrinkThumb"],
-                ]);
+                foreach($cocktails as $cocktail)
+                {
+                    array_push($cocktailArray, [
+                        "cocktailName" => $cocktail["strDrink"],
+                        "cocktailImage" => $cocktail["strDrinkThumb"],
+                    ]);
+                }
             }
+            return view('cocktails', compact('cocktailArray'));
         }
-        return view('cocktails', compact('cocktailArray'));
+        catch(Exception $e){
+            Log::error('Cocktail serach by name error!'.' '.$e);
+            return Redirect::back()->withErrors(['error' => 'Invalid input!']);
+        }
+
     }
 
     protected function getCocktailDetails($cocktailArray) : array

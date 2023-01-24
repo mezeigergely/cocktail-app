@@ -20,6 +20,9 @@
 </form>
 <div>
     <span>Not registered yet?</span>
-    <a class="btn btn-primary" href="{{ url('/signup') }}">Registration</a>
+    <a class="btn btn-danger" href="{{ url('/signup') }}">Registration</a>
 </div>
+@if($errors->any())
+        <h4 class="text-danger pt-3 position-absolute">{{$errors->first()}}</h4>
+    @endif
 @endsection

@@ -19,11 +19,14 @@
         <header>
             <div class="topnav">
                 <a class="active" href={{ url('/') }}>Home</a>
-                <a href="{{ url('/login') }}">Login</a>
-                <a href="{{ url('/login') }}">Profile</a>
-                <a href="{{ url('/login') }}">Advanced Search</a>
-                <a href="{{ url('/login') }}">Exit</a>
-                <a href="#contact">Contact</a>
+                @if( !auth()->check() )
+                    <a href="{{ url('/login') }}">Login</a>
+                @endif
+                @if( auth()->check() )
+                    <a href="{{ url('/profile') }}">{{ auth()->user()->name }}</a>
+                    <a href="{{ url('/login') }}">Advanced Search</a>
+                    <a href="{{ url('/logout') }}">Exit</a>
+                 @endif
                 <div class="search-container">
                     <form type="get" action="{{ url('/cocktails') }}">
                         <input type="text" placeholder="Search.." name="search">
