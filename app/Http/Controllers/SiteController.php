@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cocktail;
 use Illuminate\Http\Request;
 use App\Models\CocktailApiManager;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Auth;
 
 class SiteController extends Controller
 {
@@ -34,12 +36,13 @@ class SiteController extends Controller
         if(!empty($cocktailFromApi)){
             $cocktailFromApi = $this->getCocktailDetails($cocktailFromApi);
         }
+        $id = $cocktailFromApi[0]['cocktailID'];
         $img = $cocktailFromApi[0]['cocktailImage'];
         $name = $cocktailFromApi[0]['cocktailName'];
         $instru = $cocktailFromApi[0]['cocktailInstructions'];
         $ingredients = $cocktailFromApi[1]['cocktailIngredientsPlusMeasures'];
         $glass = $cocktailFromApi[0]['cocktailGlass'];
-        return view('cocktail', compact('img', 'name', 'instru', 'ingredients', 'glass'));
+        return view('cocktail', compact('id', 'img', 'name', 'instru', 'ingredients', 'glass'));
     }
 
     public function searchByName()
@@ -67,10 +70,50 @@ class SiteController extends Controller
 
     }
 
+    public function saveFavCocktail(Request $request)
+    {
+        $cocktailApiManager = new CocktailApiManager();
+        $cocktailsFromApi = $cocktailApiManager->apiCall(config("constants.search_by_id").$request->saveCocktail);
+        try{
+            if($cocktailsFromApi){
+                $cocktail = new Cocktail();
+                $cocktailChecker = $cocktail->getUserCocktailFromDB($cocktailsFromApi["idDrink"], Auth::id());
+                if($cocktailChecker)
+                {
+                    return Redirect::back()->withErrors(['error' => 'This cocktail is already added!']);
+                }
+                else{
+                    $cocktail->user_id = Auth::id();
+                    $cocktail->cocktail_id = $cocktailsFromApi["idDrink"];
+                    $cocktail->cocktail_name = $cocktailsFromApi["strDrink"];
+                    $cocktail->cocktail_image = $cocktailsFromApi["strDrinkThumb"];
+                    $cocktail->save();
+                    return redirect()->back()->with('message', 'This cocktail is added!');
+                }
+
+            }
+        }
+        catch(Exception $e){
+            Log::error('Cocktail save error!'.' '.$e);
+            return Redirect::back()->withErrors(['error' => 'Error while saving']);
+        }
+    }
+
+    public function profile()
+    {
+        return view('profile.profile');
+    }
+
+    public function advancedSearchView()
+    {
+        return view('profile.advancedSearch');
+    }
+
     protected function getCocktailDetails($cocktailArray) : array
     {
         $cocktailDetails = [];
         array_push($cocktailDetails, [
+            "cocktailID" => $cocktailArray["idDrink"],
             "cocktailName" => $cocktailArray["strDrink"],
             "cocktailInstructions" => $cocktailArray["strInstructions"],
             "cocktailImage" => $cocktailArray["strDrinkThumb"],

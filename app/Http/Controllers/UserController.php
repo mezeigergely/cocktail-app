@@ -62,11 +62,6 @@ class UserController extends Controller
         }
     }
 
-    public function profile()
-    {
-        return view('profile.profile');
-    }
-
     public function logout()
     {
         auth()->logout();

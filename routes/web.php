@@ -18,7 +18,8 @@ Route::get('/login',[UserController::class,'signIn']);
 Route::post('login',[UserController::class,'makeSignIn']);
 
 // LOGINED USER
-Route::get('/profile', [UserController::class,'profile']);
+Route::get('/profile', [SiteController::class,'profile']);
+Route::post('cocktail/save', [SiteController::class,'saveFavCocktail']);
 Route::get('/logout', [UserController::class,'logout']);
 
 // REGISTRATION
