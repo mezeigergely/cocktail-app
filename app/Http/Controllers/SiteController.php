@@ -61,13 +61,13 @@ class SiteController extends Controller
                     ]);
                 }
             }
+            asort($cocktailArray);
             return view('cocktails', compact('cocktailArray'));
         }
         catch(Exception $e){
             Log::error('Cocktail serach by name error!'.' '.$e);
             return Redirect::back()->withErrors(['error' => 'Invalid input!']);
         }
-
     }
 
     public function saveFavCocktail(Request $request)
@@ -77,7 +77,7 @@ class SiteController extends Controller
         try{
             if($cocktailsFromApi){
                 $cocktail = new Cocktail();
-                $cocktailChecker = $cocktail->getUserCocktailFromDB($cocktailsFromApi["idDrink"], Auth::id());
+                $cocktailChecker = $cocktail->cocktailChecker($cocktailsFromApi["idDrink"], Auth::id());
                 if($cocktailChecker)
                 {
                     return Redirect::back()->withErrors(['error' => 'This cocktail is already added!']);
@@ -87,10 +87,10 @@ class SiteController extends Controller
                     $cocktail->cocktail_id = $cocktailsFromApi["idDrink"];
                     $cocktail->cocktail_name = $cocktailsFromApi["strDrink"];
                     $cocktail->cocktail_image = $cocktailsFromApi["strDrinkThumb"];
+                    $cocktail->non_alcoholic = $cocktailsFromApi["strAlcoholic"];
                     $cocktail->save();
                     return redirect()->back()->with('message', 'This cocktail is added!');
                 }
-
             }
         }
         catch(Exception $e){
@@ -101,12 +101,23 @@ class SiteController extends Controller
 
     public function profile()
     {
-        return view('profile.profile');
+        $cocktail = new Cocktail();
+        $userCocktails = $cocktail->getUserCocktailFromDB(Auth::id());
+        return view('profile.profile', compact('userCocktails'));
     }
 
-    public function advancedSearchView()
+    public function removeFavCocktail(Request $request)
     {
-        return view('profile.advancedSearch');
+        try{
+            $cocktail = new Cocktail();
+            $cocktail->removeUserCocktailById($request->deleteCocktail, Auth::id());
+            return redirect()->back()->with('message', 'Cocktail is deleted!');
+
+        }
+        catch(Exception $e){
+            Log::error('Cocktail delete error!'.' '.$e);
+            return Redirect::back()->withErrors(['error' => 'Error while deleting']);
+        }
     }
 
     protected function getCocktailDetails($cocktailArray) : array

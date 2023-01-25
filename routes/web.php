@@ -20,6 +20,7 @@ Route::post('login',[UserController::class,'makeSignIn']);
 // LOGINED USER
 Route::get('/profile', [SiteController::class,'profile']);
 Route::post('cocktail/save', [SiteController::class,'saveFavCocktail']);
+Route::delete('remove/{id}', [SiteController::class,'removeFavCocktail'])->name('cocktail.delete');
 Route::get('/logout', [UserController::class,'logout']);
 
 // REGISTRATION
